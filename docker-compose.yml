@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+#  mysql:
+#    image: mysql:5.5.62
+#    environment:
+#      MYSQL_ROOT_PASSWORD: "iamroot"
+#    ports:
+#      - "3306:3306"
+#    command: "--default-authentication-plugin=mysql_native_password"
+  mysql-metastore:
+    image: hamletlee/hive-mysql-metastore:2.3.0
+    build: hive-mysql-metastore
+    environment:
+      MYSQL_ROOT_PASSWORD: "iamroot"
+      MYSQL_DATABASE: "hivedb"
+    ports:
+      - "3306:3306"
+
+  hive-server:
+    image: hamletlee/hive:2.3.0
+    build: hive
+    env_file:
+      - ./hadoop-hive.env
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:mysql://mysql-metastore/hivedb?createDatabaseIfNotExist=true&amp;characterEncoding=UTF-8&amp;useSSL=false"
+#      SERVICE_PRECONDITION: "hive-metastore:9083"
+    ports:
+      - "8000:8000"
+      - "10000:10000"
