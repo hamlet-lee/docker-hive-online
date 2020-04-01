@@ -17,15 +17,13 @@ ENV HADOOP_HOME /opt/hadoop-$HADOOP_VERSION
 WORKDIR /opt
 
 #Install Hive and PostgreSQL JDBC
-RUN apt-get update && apt-get install -y wget procps && \
-        apt-get --purge remove -y wget && \
-	apt-get clean && \
-	rm -rf /var/lib/apt/lists/*
+#RUN apt-get update && apt-get install -y wget procps && \
+#        apt-get --purge remove -y wget && \
+#	apt-get clean && \
+#	rm -rf /var/lib/apt/lists/*
 
-ADD apache-hive-$HIVE_VERSION-bin.tar.gz apache-hive-$HIVE_VERSION-bin.tar.gz
-RUN tar -xzvf apache-hive-$HIVE_VERSION-bin.tar.gz && \
-	mv apache-hive-$HIVE_VERSION-bin hive && \
-	rm apache-hive-$HIVE_VERSION-bin.tar.gz
+ADD apache-hive-$HIVE_VERSION-bin.tar.gz /opt
+RUN mv apache-hive-$HIVE_VERSION-bin hive
 
 ADD mysql-connector-java-5.1.38.jar $HIVE_HOME/lib/mysql-connector-java-5.1.38.jar
 

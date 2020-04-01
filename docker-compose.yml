@@ -16,15 +16,56 @@ services:
       MYSQL_DATABASE: "hivedb"
     ports:
       - "3306:3306"
-
+    volumes:
+      - mysql:/var/lib/mysql
   hive-server:
     image: hamletlee/hive:2.3.0
     build: hive
     env_file:
       - ./hadoop-hive.env
     environment:
-      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:mysql://mysql-metastore/hivedb?createDatabaseIfNotExist=true&amp;characterEncoding=UTF-8&amp;useSSL=false"
-#      SERVICE_PRECONDITION: "hive-metastore:9083"
+#      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:mysql://mysql-metastore/hivedb?createDatabaseIfNotExist=true&amp;characterEncoding=UTF-8&amp;useSSL=false"
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:mysql://mysql-metastore/hivedb?createDatabaseIfNotExist=true&characterEncoding=UTF-8&useSSL=false"
     ports:
       - "8000:8000"
       - "10000:10000"
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
+    volumes:
+      - namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop-hive.env
+    ports:
+      - "50070:50070"
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
+    volumes:
+      - datanode:/hadoop/dfs/data
+    env_file:
+      - ./hadoop-hive.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070"
+    ports:
+      - "50075:50075"
+  hive-client:
+    image: hamletlee/hive:2.3.0
+    env_file:
+      - ./hadoop-hive.env
+    entrypoint: ["sleep","100000000"]
+  hive-metastore:
+    image: hamletlee/hive:2.3.0
+    env_file:
+      - ./hadoop-hive.env
+#    command: cat /opt/hive/conf/hive-site.xml
+    command: /opt/hive/bin/hive --service metastore
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 mysql-metastore:3306"
+    ports:
+      - "19083:9083"
+volumes:
+  namenode:
+  datanode:
+  mysql:
